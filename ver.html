@@ -53,8 +53,16 @@
 </div>
 
 <script>
-const emojiMap   = { policia:'🚓', agente:'👮', cono:'🚧', valla:'🧱' };
-const nombreMap  = { policia:'Patrulla', agente:'Agente', cono:'Cono', valla:'Valla' };
+const emojiMap = {
+  policia:'🚓', agente:'👮', goa:'🔵', cono:'🚧', valla:'🧱',
+  ambulancia:'🚑', bomberos:'🚒', puestoMedico:'🏥',
+  evacuacion:'➡️', proteccionCivil:'🟡', puestoMando:'⭐'
+};
+const nombreMap = {
+  policia:'Patrulla', agente:'Unidad', goa:'GOA', cono:'Cono', valla:'Valla',
+  ambulancia:'Ambulancia', bomberos:'Bomberos', puestoMedico:'Puesto médico',
+  evacuacion:'Vía de evacuación', proteccionCivil:'Protección Civil', puestoMando:'Puesto de mando'
+};
 
 // Leer datos del hash de la URL (#datos comprimidos con LZ-string)
 function cargarDatos() {
