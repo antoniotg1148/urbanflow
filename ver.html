@@ -6,6 +6,7 @@
 <title>UrbanFlow — Ver escenario</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lz-string@1.5.0/libs/lz-string.min.js"></script>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: sans-serif; background: #f0f0f0; }
@@ -55,10 +56,16 @@
 const emojiMap   = { policia:'🚓', agente:'👮', cono:'🚧', valla:'🧱' };
 const nombreMap  = { policia:'Patrulla', agente:'Agente', cono:'Cono', valla:'Valla' };
 
-// Leer datos del hash de la URL (#base64...)
+// Leer datos del hash de la URL (#datos comprimidos con LZ-string)
 function cargarDatos() {
   const hash = window.location.hash.slice(1);
   if (!hash) return null;
+  // Intentar primero LZ-string (formato nuevo, comprimido)
+  try {
+    const json = LZString.decompressFromEncodedURIComponent(hash);
+    if (json) return JSON.parse(json);
+  } catch (e) {}
+  // Fallback: base64 antiguo
   try {
     const json = decodeURIComponent(escape(atob(hash)));
     return JSON.parse(json);
