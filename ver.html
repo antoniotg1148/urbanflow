@@ -112,7 +112,10 @@ if (!payload || !payload.datos) {
         item.cps.forEach((cp, i) => {
           popupHtml += `<span class="badge">Ag.${i+1}: ${cp}</span> `;
         });
+        popupHtml += '<br>';
       }
+      if (item.instrucciones) popupHtml += `<b>Instrucciones:</b> ${item.instrucciones}<br>`;
+      if (item.observaciones) popupHtml += `<b>Observaciones:</b> ${item.observaciones}<br>`;
       popupHtml += '</div>';
       marker.bindPopup(popupHtml);
     }
