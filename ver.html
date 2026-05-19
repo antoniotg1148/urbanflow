@@ -64,16 +64,44 @@ const nombreMap = {
   evacuacion:'Vía de evacuación', proteccionCivil:'Protección Civil', puestoMando:'Puesto de mando'
 };
 
-// Leer datos del hash de la URL (#datos comprimidos con LZ-string)
-function cargarDatos() {
+// Carga los datos del escenario. Dos modos:
+// 1) Si la URL tiene ?gist=ID, descarga el JSON del Gist anónimo de GitHub.
+// 2) Si la URL tiene #hash, decodifica los datos comprimidos en el hash
+//    (modo antiguo, para escenarios pequeños que caben en QR).
+async function cargarDatos() {
+  // Modo Gist (preferente, para escenarios grandes)
+  const params = new URLSearchParams(window.location.search);
+  const gistId = params.get('gist');
+  if (gistId) {
+    try {
+      // La API pública de GitHub devuelve los archivos del Gist en .files
+      const meta = await fetch(`https://api.github.com/gists/${gistId}`).then(r => {
+        if (!r.ok) throw new Error('No se pudo leer el Gist (status ' + r.status + ')');
+        return r.json();
+      });
+      const archivos = meta.files || {};
+      const primer = Object.values(archivos)[0];
+      if (!primer) throw new Error('Gist vacío');
+      // El contenido puede venir directamente en .content (si es < 1MB), o
+      // hay que descargarlo de raw_url si es más grande.
+      let contenido = primer.content;
+      if (primer.truncated || !contenido) {
+        contenido = await fetch(primer.raw_url).then(r => r.text());
+      }
+      return JSON.parse(contenido);
+    } catch (e) {
+      console.error('Error cargando Gist:', e);
+      return null;
+    }
+  }
+
+  // Modo hash (antiguo)
   const hash = window.location.hash.slice(1);
   if (!hash) return null;
-  // Intentar primero LZ-string (formato nuevo, comprimido)
   try {
     const json = LZString.decompressFromEncodedURIComponent(hash);
     if (json) return JSON.parse(json);
   } catch (e) {}
-  // Fallback: base64 antiguo
   try {
     const json = decodeURIComponent(escape(atob(hash)));
     return JSON.parse(json);
@@ -83,7 +111,9 @@ function cargarDatos() {
   }
 }
 
-const payload = cargarDatos();
+// La carga ahora es asíncrona
+(async () => {
+const payload = await cargarDatos();
 
 if (!payload || !payload.datos) {
   document.getElementById('error').style.display = 'block';
@@ -139,6 +169,7 @@ if (!payload || !payload.datos) {
   if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
   else map.setView([36.72, -4.42], 14);
 }
+})();
 </script>
 </body>
 </html>
